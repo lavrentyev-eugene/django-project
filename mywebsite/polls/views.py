@@ -1,26 +1,35 @@
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import redirect, render, get_object_or_404, reverse
+from django.views import generic
 
 from .models import Question, Choice
-
-def index(request):
-    latest_question_list = Question.objects.order_by('-pub_date')[:5]
-    context = {'latest_question_list': latest_question_list}
-    return render(request, 'polls/index.html', context)
 
 def redirect_polls(request):
     return redirect('index', permanent=True)
 
-def detail(request, question_text):
-    question = get_object_or_404(Question, question_text=question_text)
-    return render(request, 'polls/detail.html', context={'question':question})
 
-def results(request, question_text):
-    question = get_object_or_404(Question, question_text=question_text)
-    return render(request, 'polls/results.html', context={'question':question})
+class IndexView(generic.ListView):
+    model = Question
+    template_name = 'polls/index.html'
+    context_object_name = 'latest_question_list'
 
-def vote(request, question_text):
-    question = get_object_or_404(Question, question_text=question_text)
+    def get_query_set(self):
+        # Returns the last five published questions
+        return Question.objects.order_by('-pub_date')[:5]
+
+
+class DetailView(generic.DetailView):
+    model = Question
+    template_name = 'polls/detail.html'
+
+
+class ResultsView(generic.DetailView):
+    model = Question
+    template_name = 'polls/results.html'
+
+
+def vote(request, question_id):
+    question = get_object_or_404(Question, pk=question_id)
     try:
         selected_choice = question.choice_set.get(pk=request.POST['choice'])
     except (KeyError, Choice.DoesNotExist):
@@ -32,9 +41,9 @@ def vote(request, question_text):
         selected_choice.votes += 1
         selected_choice.save()
 
-        return HttpResponseRedirect(reverse('polls:results_url', args=(question.question_text,)))
+        return HttpResponseRedirect(reverse('polls:results_url', args=(question.id,)))
 
-def votes_amount(request, question_text, choice_text):
-    question = Question.objects.get(question_text=question_text)
+def votes_amount(request, question_id, choice_text):
+    question = Question.objects.get(pk=question_id)
     votes_amount = question.choice_set.get(choice_text=choice_text).votes
     return render(request, 'polls/votes_amount.html', context={'question':question, 'votes_amount':votes_amount})

@@ -2,7 +2,7 @@
 
 {% if error_message %}<p><strong>{{ error_message }}</strong></p>{% endif %}
 
-<form action="{% url 'polls:vote_url' question.question_text %}" method="post">
+<form action="{% url 'polls:vote_url' question.id %}" method="post">
   {% csrf_token %}
   {% for choice in question.choice_set.all %}
     <input type="radio" name="choice" id="choice{{ forloop.counter }}" value="{{ choice.id }}">
@@ -14,6 +14,6 @@
 View results:
 <ul>
   {% for choice in question.choice_set.all %}
-    <a href="{% url 'polls:votes_amount_url' choice_text=choice.choice_text question_text=question.question_text %}">{{ choice.choice_text }}</a><br>
+    <a href="{% url 'polls:votes_amount_url' question.id choice.choice_text  %}">{{ choice.choice_text }}</a><br>
   {% endfor %}
 </ul>
