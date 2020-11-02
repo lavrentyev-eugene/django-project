@@ -4,10 +4,12 @@ from django.views import generic
 from django.utils import timezone
 
 from .models import Question, Choice
-
+ 
 def redirect_polls(request):
     return redirect('polls:index_url', permanent=True)
 
+def admin(request):
+    return redirect('polls:admin')
 
 class IndexView(generic.ListView):
     model = Question
